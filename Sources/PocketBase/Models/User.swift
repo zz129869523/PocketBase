@@ -21,6 +21,12 @@ public struct User: AuthModel {
   public var avatar: String?
 }
 
+public extension User {
+  static func dicToStruct<T: Codable>(dictionary: [String: Any]) throws -> T {
+    return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary))
+  }
+}
+
 public protocol BaseModel: Codable, Identifiable {
   var id: String? { get set }
   var collectionId: String? { get set }
