@@ -16,7 +16,7 @@ class Global {
 }
 
 extension Global {
-  static func dicToStruct<T: Codable>(dictionary: [String: Any]) throws -> T {
+  static func dictionaryToStruct<T: Codable>(dictionary: [String: Any]) throws -> T {
     return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary))
   }
 }
