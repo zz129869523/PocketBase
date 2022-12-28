@@ -59,7 +59,7 @@ public class AuthStore<UserModel: AuthModel> {
   }
   
   func storageWith(_ dic: [String: Any]?) {
-    let authResponse = try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
+    let authResponse = try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
     self.model = authResponse?.record
     self.token = authResponse?.token
   }

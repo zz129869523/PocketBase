@@ -28,7 +28,7 @@ extension Endpoint {
       return nil
     }
     
-    components.path = "/api/" + path
+    components.path = path
     components.queryItems = queryItems
     
     guard let url = components.url else {
@@ -66,7 +66,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .get,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/records/\(id)",
+      path: "/api/collections/\(collection)/records/\(id)",
       queryItems: queryItems
     )
   }
@@ -75,7 +75,7 @@ extension Endpoint {
     return Endpoint<BodyType>(
       method: .post,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/records",
+      path: "/api/collections/\(collection)/records",
       queryItems: queryItems,
       body: body
     )
@@ -85,7 +85,7 @@ extension Endpoint {
     return Endpoint<BodyType>(
       method: .patch,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/records/\(id)",
+      path: "/api/collections/\(collection)/records/\(id)",
       queryItems: queryItems,
       body: body
     )
@@ -95,7 +95,17 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .delete,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/records/\(id)"
+      path: "/api/collections/\(collection)/records/\(id)"
+    )
+  }
+  
+  // MARK: - Realtime
+  static func setSubscriptions(clientId: String, subscriptions: [String]) -> Endpoint<RealtimeRequset> {
+    return Endpoint<RealtimeRequset>(
+      method: .post,
+      host: PocketBase<User>.host,
+      path: "/api/realtime",
+      body: RealtimeRequset(clientId: clientId, subscriptions: subscriptions)
     )
   }
   
@@ -104,7 +114,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .post,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/auth-with-password",
+      path: "/api/collections/\(collection)/auth-with-password",
       queryItems: queryItems,
       body: body
     )
@@ -114,7 +124,7 @@ extension Endpoint {
     return Endpoint<OAuth2Requset>(
       method: .post,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/auth-with-oauth2",
+      path: "/api/collections/\(collection)/auth-with-oauth2",
       queryItems: queryItems,
       body: body
     )
@@ -124,7 +134,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .post,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/auth-refresh",
+      path: "/api/collections/\(collection)/auth-refresh",
       queryItems: queryItems
     )
   }
@@ -133,7 +143,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .post,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/request-verification",
+      path: "/api/collections/\(collection)/request-verification",
       body: body
     )
   }
@@ -142,7 +152,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .post,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/request-password-reset",
+      path: "/api/collections/\(collection)/request-password-reset",
       body: body
     )
   }
@@ -151,7 +161,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .post,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/request-email-change",
+      path: "/api/collections/\(collection)/request-email-change",
       body: body
     )
   }
@@ -160,7 +170,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .get,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/auth-methods"
+      path: "/api/collections/\(collection)/auth-methods"
     )
   }
   
@@ -168,7 +178,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .get,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/records/\(id)/external-auths"
+      path: "/api/collections/\(collection)/records/\(id)/external-auths"
     )
   }
   
@@ -176,7 +186,7 @@ extension Endpoint {
     return Endpoint<[String: String]>(
       method: .delete,
       host: PocketBase<User>.host,
-      path: "collections/\(collection)/records/\(id)/external-auths/\(provider.rawValue)"
+      path: "/api/collections/\(collection)/records/\(id)/external-auths/\(provider.rawValue)"
     )
   }
 }

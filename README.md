@@ -104,7 +104,7 @@ Task {
     print(err?.code)
     print(err?.message)
     
-    if err == nil, let result: ListResult<Test> = try? Post(dictionary: dic) {
+    if err == nil, let result: ListResult<Post> = try? Post(dictionary: dic) {
       print(result.items)
     }
   }
@@ -155,6 +155,35 @@ Task {
 Task {
   let dic = await client.collection("posts").delete("RECORD_ID")
 }
+```
+
+#### Realtime
+``` swift
+// Subscribe to changes in any posts record
+client.collection("posts").subscribe("RECORD_ID") { dict in
+  print(dict)
+}
+
+// Subscribe to changes only in the specified record
+client.collection("posts").subscribe("*") { dict in
+  if let result: Event<Post> = try? Utils.dictionaryToStruct(dictionary: dict ?? [:]) { // Event<Type> Can use
+    switch result.action {
+    case .create:
+      self.posts.append(result.record)
+    case .update:
+      if let row = self.posts.firstIndex(where: { $0.id == result.record.id }) {
+        self.posts[row] = result.record
+      }
+    case .delete:
+      self.posts = self.posts.filter { $0.id != result.record.id }
+    }
+  }
+}
+
+// Unsubscribe
+client.collection('posts').unsubscribe('RECORD_ID') // remove all 'RECORD_ID' subscriptions
+client.collection('posts').unsubscribe('*') // remove all '*' topic subscriptions
+client.collection('posts').unsubscribe() // remove all subscriptions in the collection
 ```
 
 #### Auth
@@ -235,7 +264,8 @@ func update<BodyType: Codable, R: Codable>(_ id: String, body: BodyType, expand:
 func delete(_ id: String) async -> [String: Any]?
 
 // MARK: - Realtime
-// TODO
+func subscribe(_ recordId: String, completion: @escaping ([String: Any]?) -> Void)
+func unsubscribe(_ recordId: String)
 
 // MARK: - Auth
 func authWithPassword(_ identity: String, _ password: String, _ expand: String) async -> [String: Any]?
@@ -261,6 +291,5 @@ func unlinkExternalAuth(_ id: String, provider: OAuthProvider) async -> [String:
 ```
 
 ## Todo list
-[ ] Example
-[ ] Realtime
-[ ] File upload and download
+- Example
+- File upload and download

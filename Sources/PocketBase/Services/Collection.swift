@@ -30,7 +30,8 @@ protocol CollectionMethod {
   func delete(_ id: String) async -> [String: Any]?
   
   // MARK: - Realtime
-  // TODO
+  func subscribe(_ recordId: String, completion: @escaping ([String: Any]?) -> Void)
+  func unsubscribe(_ recordId: String)
   
   // MARK: - Auth
   func authWithPassword(_ identity: String, _ password: String, _ expand: String) async -> [String: Any]?
@@ -55,7 +56,7 @@ protocol CollectionMethod {
   func unlinkExternalAuth(_ id: String, provider: OAuthProvider) async -> [String: Any]?
 }
 
-public actor Collection<UserModel: AuthModel>: CollectionMethod {
+public class Collection<UserModel: AuthModel>: CollectionMethod {
   private var authStore: AuthStore<UserModel>
   private var collection: String
   private let networkService: NetworkServiceContract
@@ -93,7 +94,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func getList<R: Codable>(page: Int = 1, perPage: Int = 30, filter: String = "", sort: String = "", expand: String = "") async -> ListResult<R>? {
     let dic = await getList(page: page, perPage: perPage, filter: filter, sort: sort, expand: expand)
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as ListResult<R>
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as ListResult<R>
   }
   
   /// Fetch all records at once via getFullList.
@@ -105,7 +106,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   /// - Returns: <#description#>
   public func getFullList<R: Codable>(batch: Int = 100, filter: String = "", sort: String = "", expand: String = "") async -> [R] {
     let dic = await getList(page: 1, perPage: batch, filter: filter, sort: sort, expand: expand)
-    let list = try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as ListResult<R>
+    let list = try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as ListResult<R>
     return list?.items ?? []
   }
   
@@ -117,7 +118,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   /// - Returns: <#description#>
   public func getFirstListItem<R: Codable>(filter: String = "", sort: String = "", expand: String = "") async -> R? {
     let dic = await getList(page: 1, perPage: 1, filter: filter, sort: sort, expand: expand)
-    let list = try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as ListResult<R>
+    let list = try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as ListResult<R>
     return list?.items.first
   }
   
@@ -134,7 +135,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func getOne<R: Codable>(id: String, expand: String = "") async -> R? {
     let dic = await getOne(id: id , expand: expand)
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as R
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as R
   }
   
   // MARK: - Create
@@ -147,13 +148,13 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func create<BodyType: Codable, R: Codable>(_ body: BodyType) async -> R? {
     let dic: [String: Any]? = await create(body)
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as R
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as R
   }
   
   // MARK: - Update
   /// Update a single record.
   /// - Parameters:
-  ///   - id: ID of the record to delete.
+  ///   - id: ID of the record to update.
   ///   - body: A request body is data sent by the client to your API.
   ///   - expand: Auto expand record relations. Ex.: `expand = "relField1,relField2.subRelField"`
   /// - Returns: <#description#>
@@ -164,7 +165,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func update<BodyType: Codable, R: Codable>(_ id: String, body: BodyType, expand: String = "") async -> R? {
     let dic: [String: Any]? = await update(id, body: body, expand: expand)
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as R
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as R
   }
   
   // MARK: - Delete
@@ -176,6 +177,59 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   }
   
   // MARK: - Realtime
+  /// Subscribe to realtime changes via Server-Sent Events (SSE).
+  /// Events are sent for create, update and delete record operations.
+  /// - Parameters:
+  ///   - recordId: ID of the record to subscribe.
+  ///   - completion: <#completion description#>
+  public func subscribe(_ recordId: String, completion: @escaping ([String: Any]?) -> Void) {
+    let rt = Realtime.shared
+    let event = recordId == "*" ? self.collection : self.collection + "/" + recordId
+    
+    Task {
+      let dict = await rt.subscribe(event)
+      let err = try? ErrorResponse(dictionary: dict ?? [:])
+      if let err {
+        print(err)
+      }
+      
+      rt.eventSource?.addEventListener(event, handler: { id, event, data in
+        guard let id else { return }
+        rt.currentId = id
+        
+        guard let data, let dict = Utils.stringToDictionary(text: data) else { return }
+        completion(dict)
+      })
+    }
+  }
+  
+  /// Subscribe to realtime changes via Server-Sent Events (SSE).
+  /// - Parameter recordId: ID of the record to unsubscribe.
+  public func unsubscribe(_ recordId: String = "") {
+    let rt = Realtime.shared
+    
+    let event = recordId == ""
+                ? ""
+                : recordId == "*"
+                  ? self.collection
+                  : self.collection + "/" + recordId
+    
+    Task {
+      let dict = await rt.unsubscribe(event)
+      let err = try? ErrorResponse(dictionary: dict ?? [:])
+      if let err {
+        print(err)
+      }
+      
+      if event == "" {
+        for subscriptions in rt.subscriptions {
+          rt.eventSource?.removeEventListener(subscriptions)
+        }
+      } else {
+        rt.eventSource?.removeEventListener(event)
+      }
+    }
+  }
   
   // MARK: - Auth
   /// Returns new auth token and account data by a combination of username/email and password.
@@ -201,7 +255,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func authWithPassword<UserModel: AuthModel>(_ identity: String, _ password: String) async -> AuthResponse<UserModel>? {
     let dic: [String: Any]? = await authWithPassword(identity, password)
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
   }
   
   /// Authenticate with an OAuth2 provider and returns a new auth token and record data.
@@ -245,7 +299,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
     expand: String = ""
   ) async -> AuthResponse<UserModel>? {
     let dic: [String: Any]? = await authWithOAuth2(provider, code: code, codeVerifier: codeVerifier, redirectUrl: redirectUrl, createData: createData, expand: expand)
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
   }
   
   /// Returns a new auth response (token and record data) for an already authenticated record.
@@ -262,7 +316,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func authRefresh<UserModel: AuthModel>(expand: String = "") async -> AuthResponse<UserModel>? {
     let dic: [String: Any]? = await authRefresh(expand: expand)
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as AuthResponse<UserModel>
   }
   
   /// Sends users verification email request.
@@ -294,7 +348,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func listAuthMethods() async -> AuthMethods? {
     let dic: [String: Any]? = await listAuthMethods()
-    return try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as AuthMethods
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as AuthMethods
   }
   
   /// Returns a list with all OAuth2 providers linked to a single users.
@@ -307,7 +361,7 @@ public actor Collection<UserModel: AuthModel>: CollectionMethod {
   
   public func listExternalAuths(_ id: String) async -> [AuthMethod] {
     let dic: [String: Any]? = await listExternalAuths(id)
-    let result = try? Global.dictionaryToStruct(dictionary: dic ?? [:]) as [AuthMethod]
+    let result = try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as [AuthMethod]
     return result ?? []
   }
   
