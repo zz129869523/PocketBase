@@ -13,6 +13,7 @@ struct Endpoint<BodyType: Encodable> {
   var path: String
   var queryItems: [URLQueryItem]?
   var body: BodyType? = nil
+  var mimeType: String = "application/json"
 }
 
 enum HTTPMethod: String {
@@ -46,7 +47,7 @@ extension Endpoint {
     let buildVersion = "\(Bundle.main.buildVersionNumber ?? "")"
     
     var header = [
-      "Content-type": "application/json",
+      "Content-type": mimeType,
       "User-Agent": "\(appVersion) (\(bundleId); build:\(buildVersion); \(iosVersion); \(Bundle.modelName))"
     ]
     
@@ -71,13 +72,14 @@ extension Endpoint {
     )
   }
   
-  static func create<BodyType: Encodable>(_ collection: String, body: BodyType, queryItems: [URLQueryItem]? = nil) -> Endpoint<BodyType> {
+  static func create<BodyType: Encodable>(_ collection: String, body: BodyType, mimeType: String = "application/json", queryItems: [URLQueryItem]? = nil) -> Endpoint<BodyType> {
     return Endpoint<BodyType>(
       method: .post,
       host: PocketBase<User>.host,
       path: "/api/collections/\(collection)/records",
       queryItems: queryItems,
-      body: body
+      body: body,
+      mimeType: mimeType
     )
   }
   

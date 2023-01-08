@@ -27,7 +27,11 @@ final class NetworkService: NetworkServiceContract {
     var urlRequest = URLRequest(url: url)
     urlRequest.httpMethod = endpoint.method.rawValue
     if let body = endpoint.body {
-      urlRequest.httpBody = try? JSONEncoder().encode(body)
+      if type(of: body) == Data.self {
+        urlRequest.httpBody = body as? Data
+      } else {
+        urlRequest.httpBody = try? JSONEncoder().encode(body)
+      }
     }
     
     endpoint.headers.forEach { (key, value) in

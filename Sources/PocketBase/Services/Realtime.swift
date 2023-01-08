@@ -35,7 +35,8 @@ class Realtime {
     })
     
     eventSource?.addEventListener("PB_CONNECT", handler: { id, event, data in
-      guard let data, let dict = Utils.stringToDictionary(text: data) else { return }
+      guard let data else { return }
+      let dict = Utils.stringToDictionary(text: data)
       self.clientId = dict["clientId"] as? String
       self.currentId = id
       

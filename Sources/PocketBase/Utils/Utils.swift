@@ -12,14 +12,44 @@ public class Utils {
     return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary))
   }
   
-  public static func stringToDictionary(text: String) -> [String: Any]? {
+  public static func stringToDictionary(text: String) -> [String: Any] {
     if let data = text.data(using: .utf8) {
       do {
-        return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+        return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] ?? [:]
       } catch {
         print(error.localizedDescription)
       }
     }
-    return nil
+    
+    return [:]
+  }
+  
+  public static func structToDictionary<T: Encodable>(_ t: T) -> [String: Any] {
+    do {
+      let data = try JSONEncoder().encode(t)
+      return try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] ?? [:]
+    } catch {
+      print(error)
+    }
+    
+    return [:]
+  }
+  
+  static func parametersToFormData(_ boundary: String, key: String, value: Any) -> Data {
+    var body = Data()
+    body.append("--\(boundary)\r\n")
+    body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+    body.append("\(value)\r\n")
+    return body
+  }
+  
+  static func fileToFormData(_ boundary: String, key: String, value: Data, filename: String, mimeType: String) -> Data {
+    var body = Data()
+    body.append("--\(boundary)\r\n")
+    body.append("Content-Disposition: form-data; name=\"\(key)\"; filename=\"\(filename)\"\r\n")
+    body.append("Content-Type: \(mimeType)\r\n\r\n") // image/png
+    body.append(value)
+    body.append("\r\n")
+    return body
   }
 }

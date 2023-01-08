@@ -20,7 +20,9 @@ protocol CollectionMethod {
   
   // MARK: - Create
   func create<BodyType: Codable>(_ body: BodyType) async -> [String: Any]?
+  func create<BodyType: Codable & MultipartFormData>(_ body: BodyType) async -> [String: Any]?
   func create<BodyType: Codable, R: Codable>(_ body: BodyType) async -> R?
+  func create<BodyType: Codable & MultipartFormData, R: Codable>(_ body: BodyType) async -> R?
   
   // MARK: - Update
   func update<BodyType: Codable>(_ id: String, body: BodyType, expand: String) async -> [String: Any]?
@@ -146,7 +148,41 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
     return try? await self.networkService.requset(endpoint: Endpoint<BodyType>.create(self.collection, body: body))
   }
   
+  public func create<BodyType: Codable & MultipartFormData>(_ body: BodyType) async -> [String: Any]? {
+    var httpBody = Data()
+    let boundary = UUID().uuidString
+    let mimeType = "multipart/form-data; boundary=\(boundary)"
+    
+    for (key, value) in Utils.structToDictionary(body) {
+      let dict = value as? [String : Any] ?? [:]
+      if let file: File = try? Utils.dictionaryToStruct(dictionary: dict) {
+        httpBody.append(Utils.fileToFormData(boundary, key: key, value: file.data, filename: file.filename, mimeType: file.mimeType))
+        continue
+      }
+      
+      let dicts = value as? [[String : Any]] ?? []
+      for dict in dicts {
+        if let file: File = try? Utils.dictionaryToStruct(dictionary: dict)  {
+          httpBody.append(Utils.fileToFormData(boundary, key: key, value: file.data, filename: file.filename, mimeType: file.mimeType))
+          continue
+        }
+      }
+      
+      // other type
+      httpBody.append(Utils.parametersToFormData(boundary, key: key, value: value))
+    }
+    
+    httpBody.append("--\(boundary)--")
+    
+    return try? await self.networkService.requset(endpoint: Endpoint<Data>.create(self.collection, body: httpBody, mimeType: mimeType))
+  }
+  
   public func create<BodyType: Codable, R: Codable>(_ body: BodyType) async -> R? {
+    let dic: [String: Any]? = await create(body)
+    return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as R
+  }
+  
+  public func create<BodyType: Codable & MultipartFormData, R: Codable>(_ body: BodyType) async -> R? {
     let dic: [String: Any]? = await create(body)
     return try? Utils.dictionaryToStruct(dictionary: dic ?? [:]) as R
   }
@@ -197,7 +233,8 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
         guard let id else { return }
         rt.currentId = id
         
-        guard let data, let dict = Utils.stringToDictionary(text: data) else { return }
+        guard let data else { return }
+        let dict = Utils.stringToDictionary(text: data)
         completion(dict)
       })
     }

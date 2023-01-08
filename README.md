@@ -10,6 +10,7 @@ The specific usage is similar to that provided by [pocketbase](https://pocketbas
 - Delete
 - Realtime
 - Auth
+- File upload
 
 ## Getting Started
 
@@ -148,6 +149,26 @@ Task {
 Task {
   let post: Post? = await client.collection("posts").create(["title": "hello pocketbase"])
   let post: Post? = await client.collection("posts").create(Post(title: "hello pocketbase"))
+
+  // If you wanna upload file you should add MultipartFormData in your sturct.
+  // And use File struct.
+  // Like: 
+  struct Post: Codable, Identifiable, MultipartFormData { // <- Add MultipartFormData
+    var id: String?
+    var title: String
+    var image: File // <- This
+    var imageOptional: File? // Optional
+    var images: [File] // <- Or like this
+    var imagesOptional: [File]? // Optional
+  }
+
+  let file = File(mimeType: "image/jpeg", filename: "img1", data: photoDataOrOtherData)
+
+  // Upload post with image file
+  let post: Post? = await client.collection("posts").create(Post(title: "hello pocketbase", image: file))
+
+  // Download URL is http://127.0.0.1:8090/api/files/COLLECTION_ID_OR_NAME/RECORD_ID/FILENAME
+  // 
 }
 ```
 
@@ -168,14 +189,14 @@ Task {
 
 #### Realtime
 ``` swift
-// Subscribe to changes in any posts record
+// Subscribe to changes only in the specified record
 client.collection("posts").subscribe("RECORD_ID") { dict in
   print(dict)
 }
 
-// Subscribe to changes only in the specified record
+// Subscribe to changes in any posts record
 client.collection("posts").subscribe("*") { dict in
-  if let result: Event<Post> = try? Utils.dictionaryToStruct(dictionary: dict ?? [:]) { // Event<Type> Can use
+  if let result: Event<Post> = try? Utils.dictionaryToStruct(dictionary: dict ?? [:]) { // Optional: Event<Type> Can use
     switch result.action {
     case .create:
       self.posts.append(result.record)
@@ -263,7 +284,9 @@ func getOne<R: Codable>(id: String, expand: String) async -> R?
 
 // MARK: - Create
 func create<BodyType: Codable>(_ body: BodyType) async -> [String: Any]?
+func create<BodyType: Codable & MultipartFormData>(_ body: BodyType) async -> [String: Any]?
 func create<BodyType: Codable, R: Codable>(_ body: BodyType) async -> R?
+func create<BodyType: Codable & MultipartFormData, R: Codable>(_ body: BodyType) async -> R?
 
 // MARK: - Update
 func update<BodyType: Codable>(_ id: String, body: BodyType, expand: String) async -> [String: Any]?
@@ -301,4 +324,3 @@ func unlinkExternalAuth(_ id: String, provider: OAuthProvider) async -> [String:
 
 ## Todo list
 - Example
-- File upload and download
