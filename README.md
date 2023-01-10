@@ -39,7 +39,7 @@ let client = PocketBase<User>(host: "https://your_domain")
 #### Custom authStore
 If you want to customize the default authStore(User), you can extend it and pass a new custom struct to the client:
 ``` swift
-struct CustomUser: AuthModel {
+struct CustomUser: AuthModel { // implement AuthModel
   var id: String?
   var collectionId: String?
   var collectionName: String?
@@ -237,9 +237,9 @@ client.collection("posts").subscribe("*") { dict in
 }
 
 // Unsubscribe
-client.collection('posts').unsubscribe('RECORD_ID') // remove all 'RECORD_ID' subscriptions
-client.collection('posts').unsubscribe('*') // remove all '*' topic subscriptions
-client.collection('posts').unsubscribe() // remove all subscriptions in the collection
+client.collection("posts").unsubscribe("RECORD_ID") // remove all "RECORD_ID" subscriptions
+client.collection("posts").unsubscribe("*") // remove all "*" topic subscriptions
+client.collection("posts").unsubscribe() // remove all subscriptions in the collection
 ```
 
 #### Auth
