@@ -27,4 +27,67 @@ public class PocketBase<UserModel: AuthModel>: ObservableObject {
   public func collection(_ collection: String) -> Collection<UserModel> {
     return Collection(authStore, collection)
   }
+  
+  public func getFileUrl(_ record: [String: Any], _ filename: String, query: [String: String] = [:]) -> URL? {
+    var queryItem: [URLQueryItem] = []
+    var collectionName: String = ""
+    var recordId: String = ""
+    
+    guard var components = URLComponents(string: PocketBase<User>.host) else {
+      return nil
+    }
+    
+    for (key, value) in record {
+      if key != "id" && key != "collectionName" { continue }
+      
+      if key == "id" {
+        recordId = value as? String ?? ""
+        continue
+      }
+      
+      if key == "collectionName" {
+        collectionName = value as? String ?? ""
+        continue
+      }
+    }
+    
+    guard recordId != "", collectionName != "" else { return nil }
+    
+    components.path = "/api/files/\(collectionName)/\(recordId)/\(filename)"
+   
+    for (key, value) in query {
+      queryItem.append(URLQueryItem(name: key, value: value))
+    }
+    
+    if queryItem.count > 0 {
+      components.queryItems = queryItem
+    }
+    
+    return components.url
+  }
+  
+  public func getFileUrl<T: BaseModel>(_ record: T, _ filename: String, query: [String: String] = [:]) -> URL? {
+    var queryItem: [URLQueryItem] = []
+    
+    guard var components = URLComponents(string: PocketBase<User>.host) else {
+      return nil
+    }
+
+    guard let collectionName = record.collectionName, let recordId = record.id else {
+      return nil
+    }
+    
+    components.path = "/api/files/\(collectionName)/\(recordId)/\(filename)"
+    
+    
+    for (key, value) in query {
+      queryItem.append(URLQueryItem(name: key, value: value))
+    }
+    
+    if queryItem.count > 0 {
+      components.queryItems = queryItem
+    }
+    
+    return components.url
+  }
 }

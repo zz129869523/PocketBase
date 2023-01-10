@@ -153,7 +153,7 @@ Task {
   // If you wanna upload file you should add MultipartFormData in your sturct.
   // And use File struct.
   // Like: 
-  struct Post: Codable, Identifiable, MultipartFormData { // <- Add MultipartFormData
+  struct PostRequest: Codable, Identifiable, MultipartFormData { // <- Add MultipartFormData
     var id: String?
     var title: String
     var image: File // <- This
@@ -165,10 +165,36 @@ Task {
   let file = File(mimeType: "image/jpeg", filename: "img1", data: photoDataOrOtherData)
 
   // Upload post with image file
-  let post: Post? = await client.collection("posts").create(Post(title: "hello pocketbase", image: file))
+  let post: Post? = await client.collection("posts").create(PostRequest(title: "hello pocketbase", image: file, images: [file, file, file]))
 
   // Download URL is http://127.0.0.1:8090/api/files/COLLECTION_ID_OR_NAME/RECORD_ID/FILENAME
-  // 
+
+  // returns something like:
+  // http://127.0.0.1:8090/api/files/posts/amqb484dme8ujz4/img1_52iWbGinWd.jpg
+  if let record: [String: Any] = await client.collection("posts").getOne(id: "amqb484dme8ujz4") {
+    let filename = record["image"] as! String
+    print(client.getFileUrl(record, filename))
+  }
+  // or struct Post implement BaseModel
+  struct Post: Codable, BaseModel { // <- BaseModel is required
+    var id: String?
+    var collectionId: String?
+    var collectionName: String?
+    var created: String?
+    var updated: String?
+    var title: String
+    var image: String
+    var imageOptional: String?
+    var images: [String]
+    var imagesOptional: [String]?
+  }
+
+  // returns something like:
+  // http://127.0.0.1:8090/api/files/posts/amqb484dme8ujz4/img1_52iWbGinWd.jpg?thumb=200x200
+  if let record: Post = await client.collection("posts").getOne(id: "amqb484dme8ujz4") {
+    let filename = record.image
+    print(client.getFileUrl(record, filename, query: ["thumb": "200x200"]))
+  }
 }
 ```
 
