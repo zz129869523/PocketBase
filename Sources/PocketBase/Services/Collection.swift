@@ -152,8 +152,11 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
     var httpBody = Data()
     let boundary = UUID().uuidString
     let mimeType = "multipart/form-data; boundary=\(boundary)"
+    var isOtherType: Bool = true
     
     for (key, value) in Utils.structToDictionary(body) {
+      isOtherType = true
+      
       let dict = value as? [String : Any] ?? [:]
       if let file: File = try? Utils.dictionaryToStruct(dictionary: dict) {
         httpBody.append(Utils.fileToFormData(boundary, key: key, value: file.data, filename: file.filename, mimeType: file.mimeType))
@@ -164,12 +167,14 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
       for dict in dicts {
         if let file: File = try? Utils.dictionaryToStruct(dictionary: dict)  {
           httpBody.append(Utils.fileToFormData(boundary, key: key, value: file.data, filename: file.filename, mimeType: file.mimeType))
-          continue
+          isOtherType = false
         }
       }
       
       // other type
-      httpBody.append(Utils.parametersToFormData(boundary, key: key, value: value))
+      if isOtherType {
+        httpBody.append(Utils.parametersToFormData(boundary, key: key, value: value))
+      }
     }
     
     httpBody.append("--\(boundary)--")

@@ -28,7 +28,19 @@ public class PocketBase<UserModel: AuthModel>: ObservableObject {
     return Collection(authStore, collection)
   }
   
+  public func getFileUrl(_ id: String, _ collectionName: String, _ filename: String, query: [String: String] = [:]) -> URL? {
+    return Self.getFileUrl(["id": id, "collectionName": collectionName], filename, query: query)
+  }
+  
+  public static func getFileUrl(_ id: String, _ collectionName: String, _ filename: String, query: [String: String] = [:]) -> URL? {
+    return Self.getFileUrl(["id": id, "collectionName": collectionName], filename, query: query)
+  }
+  
   public func getFileUrl(_ record: [String: Any], _ filename: String, query: [String: String] = [:]) -> URL? {
+    return Self.getFileUrl(record, filename, query: query)
+  }
+  
+  public static func getFileUrl(_ record: [String: Any], _ filename: String, query: [String: String] = [:]) -> URL? {
     var queryItem: [URLQueryItem] = []
     var collectionName: String = ""
     var recordId: String = ""
@@ -67,6 +79,10 @@ public class PocketBase<UserModel: AuthModel>: ObservableObject {
   }
   
   public func getFileUrl<T: BaseModel>(_ record: T, _ filename: String, query: [String: String] = [:]) -> URL? {
+    return Self.getFileUrl(record, filename, query: query)
+  }
+  
+  public static func getFileUrl<T: BaseModel>(_ record: T, _ filename: String, query: [String: String] = [:]) -> URL? {
     var queryItem: [URLQueryItem] = []
     
     guard var components = URLComponents(string: PocketBase<User>.host) else {

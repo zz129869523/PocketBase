@@ -19,11 +19,36 @@ public struct User: AuthModel {
   public var email: String?
   public var name: String?
   public var avatar: String?
+  
+  public init(id: String? = nil,
+              collectionId: String? = nil,
+              collectionName: String? = nil,
+              created: String? = nil,
+              updated: String? = nil,
+              username: String? = nil,
+              verified: Bool? = nil,
+              emailVisibility: Bool? = nil,
+              email: String? = nil,
+              name: String? = nil,
+              avatar: String? = nil
+  ) {
+    self.id = id
+    self.collectionId = collectionId
+    self.collectionName = collectionName
+    self.created = created
+    self.updated = updated
+    self.username = username
+    self.verified = verified
+    self.emailVisibility = emailVisibility
+    self.email = email
+    self.name = name
+    self.avatar = avatar
+  }
 }
 
 public extension User {
-  static func dicToStruct<T: Codable>(dictionary: [String: Any]) throws -> T {
-    return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary))
+  init(dictionary: [String: Any]?) throws {
+    self = try JSONDecoder().decode(Self.self, from: JSONSerialization.data(withJSONObject: dictionary ?? [:]))
   }
 }
 

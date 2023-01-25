@@ -57,12 +57,9 @@ class Realtime {
   func subscribe(_ event: String) async -> [String: Any]? {
     setupEventSource()
 
-    if self.subscriptions.contains(where: { $0 == event }) {
-      print("event(\(event)) in the subscriptions")
-      return nil
+    if !self.subscriptions.contains(where: { $0 == event }) {
+      self.subscriptions.append(event)
     }
-    
-    self.subscriptions.append(event)
     
     guard let clientId else { return nil }
 

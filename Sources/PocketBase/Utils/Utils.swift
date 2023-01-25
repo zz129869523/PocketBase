@@ -8,8 +8,8 @@
 import Foundation
 
 public class Utils {
-  public static func dictionaryToStruct<T: Codable>(dictionary: [String: Any]) throws -> T {
-    return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary))
+  public static func dictionaryToStruct<T: Codable>(dictionary: [String: Any]?) throws -> T {
+    return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary ?? [:]))
   }
   
   public static func stringToDictionary(text: String) -> [String: Any] {

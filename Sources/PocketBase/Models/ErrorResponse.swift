@@ -19,7 +19,7 @@ public struct ErrorResponse: Codable {
 }
 
 public extension ErrorResponse {
-  init(dictionary: [String: Any]) throws {
-    self = try JSONDecoder().decode(Self.self, from: JSONSerialization.data(withJSONObject: dictionary))
+  init(dictionary: [String: Any]?) throws {
+    self = try JSONDecoder().decode(Self.self, from: JSONSerialization.data(withJSONObject: dictionary ?? [:]))
   }
 }
