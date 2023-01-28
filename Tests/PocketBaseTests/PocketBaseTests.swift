@@ -50,7 +50,7 @@ final class PocketBaseTests: XCTestCase {
       
       XCTAssertNil(err)
       if err == nil {
-        let user: User? = try? User.dicToStruct(dictionary: dic)
+        let user: User? = try? User(dictionary: dic)
         
         XCTAssertNotNil(user)
         if let user {

@@ -1,0 +1,31 @@
+{
+  "pins" : [
+    {
+      "identity" : "eventsource",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/inaka/EventSource.git",
+      "state" : {
+        "revision" : "78934b361891c7d0fa3d399d128e959f0c94d267"
+      }
+    },
+    {
+      "identity" : "kingfisher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Kingfisher",
+      "state" : {
+        "revision" : "90135885ef506506620c4911cefb55a95ca2a9a2",
+        "version" : "7.5.0"
+      }
+    },
+    {
+      "identity" : "pocketbase",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/zz129869523/PocketBase",
+      "state" : {
+        "branch" : "main",
+        "revision" : "3a576033385718045e439a37dc432e56c80e9cd0"
+      }
+    }
+  ],
+  "version" : 2
+}
