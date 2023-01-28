@@ -14,7 +14,7 @@ The specific usage is similar to that provided by [pocketbase](https://pocketbas
 
 ## Demo
 
-Demo App Design Reference Youtuber [Kavsoft](https://www.youtube.com/@Kavsoft)'s [SwiftUI Social Media App](https://www.youtube.com/watch?v=-pAQcPolruw&list=PLimqJDzPI-H9u3cSJCPB_EJsTU8XP2NUT)
+[Demo](./Example) App Design Reference Youtuber [Kavsoft](https://www.youtube.com/@Kavsoft)'s [SwiftUI Social Media App](https://www.youtube.com/watch?v=-pAQcPolruw&list=PLimqJDzPI-H9u3cSJCPB_EJsTU8XP2NUT)
 
 https://user-images.githubusercontent.com/16719064/215251448-41018bb5-a115-473f-a56a-7156b2c3875e.mp4
 
@@ -84,6 +84,7 @@ struct ContentView: View {
   var body: some View {
     // ...
   }
+}
 ```
 or 
 ``` swift
