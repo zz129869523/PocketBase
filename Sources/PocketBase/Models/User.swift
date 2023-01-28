@@ -70,7 +70,4 @@ public protocol AuthModel: BaseModel {
   var verified: Bool? { get set }
   var emailVisibility: Bool? { get set }
   var email: String? { get set }
-  var name: String? { get set }
-  var avatar: String? { get set }
 }
-
