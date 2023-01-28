@@ -1,0 +1,13 @@
+{
+  "pins" : [
+    {
+      "identity" : "eventsource",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/inaka/EventSource.git",
+      "state" : {
+        "revision" : "78934b361891c7d0fa3d399d128e959f0c94d267"
+      }
+    }
+  ],
+  "version" : 2
+}
