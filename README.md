@@ -27,9 +27,11 @@ Make sure to enable PocketBase first, please refer to [pocketbase](https://githu
 
 #### Swift Package Manager
 1. Insert url of this SPM in your XCode Project with `File → Add Package → Copy Dependency`.
+2. Because of EventSource, you can only choose to use branch main at present.
 ```
 https://github.com/zz129869523/PocketBase
 ```
+
 2. Import the framework:
 ``` swift
 import PocketBase
