@@ -54,10 +54,6 @@ actor Realtime {
     })
   }
   
-  func setCurrentId(_ currentId: String?) {
-    self.currentId = currentId
-  }
-  
   func subscribe(_ event: String) async -> [String: Any]? {
     setupEventSource()
 
@@ -86,6 +82,25 @@ actor Realtime {
     }
     
     return try? await self.networkService.requset(endpoint: Endpoint<RealtimeRequset>.setSubscriptions(clientId: clientId, subscriptions: self.subscriptions))
+  }
+  
+  func addEventListener(event: String, handler: @escaping (String?, String?, String?) -> Void) {
+    eventSource?.addEventListener(event, handler: { id, event, data in
+      guard let id else { return }
+      self.currentId = id
+      
+      handler(id, event, data)
+    })
+  }
+  
+  func removeEventListener(event: String) {
+    eventSource?.removeEventListener(event)
+  }
+  
+  func removeAllEventListeners() {
+    for subscription in subscriptions {
+      eventSource?.removeEventListener(subscription)
+    }
   }
 }
 

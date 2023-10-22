@@ -234,16 +234,11 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
         print(err)
       }
       
-      await rt.eventSource?.addEventListener(event, handler: { id, event, data in
-        Task {
-          guard let id else { return }
-          await rt.setCurrentId(id)
-          
-          guard let data else { return }
-          let dict = Utils.stringToDictionary(text: data)
-          completion(dict)
-        }
-      })
+      await rt.addEventListener(event: event) { _, _, data in
+        guard let data else { return }
+        let dict = Utils.stringToDictionary(text: data)
+        completion(dict)
+      }
     }
   }
   
@@ -266,11 +261,9 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
       }
       
       if event == "" {
-        for subscriptions in await rt.subscriptions {
-          await rt.eventSource?.removeEventListener(subscriptions)
-        }
+        await rt.removeAllEventListeners()
       } else {
-        await rt.eventSource?.removeEventListener(event)
+        await rt.removeEventListener(event: event)
       }
     }
   }
