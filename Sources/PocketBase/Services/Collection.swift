@@ -1,6 +1,6 @@
 //
 //  Collection.swift
-//  
+//
 //
 //  Created by zz129869523 on 2022/12/22.
 //
@@ -234,13 +234,15 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
         print(err)
       }
       
-      rt.eventSource?.addEventListener(event, handler: { id, event, data in
-        guard let id else { return }
-        rt.currentId = id
-        
-        guard let data else { return }
-        let dict = Utils.stringToDictionary(text: data)
-        completion(dict)
+      await rt.eventSource?.addEventListener(event, handler: { id, event, data in
+        Task {
+          guard let id else { return }
+          await rt.setCurrentId(id)
+          
+          guard let data else { return }
+          let dict = Utils.stringToDictionary(text: data)
+          completion(dict)
+        }
       })
     }
   }
@@ -251,10 +253,10 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
     let rt = Realtime.shared
     
     let event = recordId == ""
-                ? ""
-                : recordId == "*"
-                  ? self.collection
-                  : self.collection + "/" + recordId
+    ? ""
+    : recordId == "*"
+    ? self.collection
+    : self.collection + "/" + recordId
     
     Task {
       let dict = await rt.unsubscribe(event)
@@ -264,11 +266,11 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
       }
       
       if event == "" {
-        for subscriptions in rt.subscriptions {
-          rt.eventSource?.removeEventListener(subscriptions)
+        for subscriptions in await rt.subscriptions {
+          await rt.eventSource?.removeEventListener(subscriptions)
         }
       } else {
-        rt.eventSource?.removeEventListener(event)
+        await rt.eventSource?.removeEventListener(event)
       }
     }
   }

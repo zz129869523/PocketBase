@@ -8,7 +8,7 @@
 import Foundation
 import EventSource
 
-class Realtime {
+actor Realtime {
   static let shared = Realtime()
   private let networkService: NetworkServiceContract = NetworkService()
   
@@ -52,6 +52,10 @@ class Realtime {
         }
       }
     })
+  }
+  
+  func setCurrentId(_ currentId: String?) {
+    self.currentId = currentId
   }
   
   func subscribe(_ event: String) async -> [String: Any]? {
