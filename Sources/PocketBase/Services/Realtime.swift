@@ -84,7 +84,7 @@ actor Realtime {
     return try? await self.networkService.requset(endpoint: Endpoint<RealtimeRequset>.setSubscriptions(clientId: clientId, subscriptions: self.subscriptions))
   }
   
-  func addEventListener(event: String, handler: @escaping (String?, String?, String?) -> Void) {
+  func addEventListener(_ event: String, handler: @escaping (String?, String?, String?) -> Void) {
     eventSource?.addEventListener(event, handler: { id, event, data in
       guard let id else { return }
       self.currentId = id
@@ -93,7 +93,7 @@ actor Realtime {
     })
   }
   
-  func removeEventListener(event: String) {
+  func removeEventListener(_ event: String) {
     eventSource?.removeEventListener(event)
   }
   

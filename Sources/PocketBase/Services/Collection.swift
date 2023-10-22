@@ -234,7 +234,7 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
         print(err)
       }
       
-      await rt.addEventListener(event: event) { _, _, data in
+      await rt.addEventListener(event) { _, _, data in
         guard let data else { return }
         let dict = Utils.stringToDictionary(text: data)
         completion(dict)
@@ -248,11 +248,10 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
     let rt = Realtime.shared
     
     let event = recordId == ""
-    ? ""
-    : recordId == "*"
-    ? self.collection
-    : self.collection + "/" + recordId
-    
+                ? ""
+                : recordId == "*"
+                  ? self.collection
+                  : self.collection + "/" + recordId
     Task {
       let dict = await rt.unsubscribe(event)
       let err = try? ErrorResponse(dictionary: dict ?? [:])
@@ -263,7 +262,7 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
       if event == "" {
         await rt.removeAllEventListeners()
       } else {
-        await rt.removeEventListener(event: event)
+        await rt.removeEventListener(event)
       }
     }
   }
