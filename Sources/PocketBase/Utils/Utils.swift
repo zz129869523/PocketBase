@@ -8,8 +8,20 @@
 import Foundation
 
 public class Utils {
+  public static let jsonDecoder: JSONDecoder = {
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .formatted(.defaultPocketBase)
+    return decoder
+  }()
+  
+  public static let jsonEncoder: JSONEncoder = {
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .formatted(.defaultPocketBase)
+    return encoder
+  }()
+  
   public static func dictionaryToStruct<T: Codable>(dictionary: [String: Any]?) throws -> T {
-    return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary ?? [:]))
+    return try Utils.jsonDecoder.decode(T.self, from: JSONSerialization.data(withJSONObject: dictionary ?? [:]))
   }
   
   public static func stringToDictionary(text: String) -> [String: Any] {
@@ -26,7 +38,7 @@ public class Utils {
   
   public static func structToDictionary<T: Encodable>(_ t: T) -> [String: Any] {
     do {
-      let data = try JSONEncoder().encode(t)
+      let data = try Utils.jsonEncoder.encode(t)
       return try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] ?? [:]
     } catch {
       print(error)
