@@ -1,6 +1,6 @@
 //
 //  Collection.swift
-//  
+//
 //
 //  Created by zz129869523 on 2022/12/22.
 //
@@ -234,14 +234,11 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
         print(err)
       }
       
-      rt.eventSource?.addEventListener(event, handler: { id, event, data in
-        guard let id else { return }
-        rt.currentId = id
-        
+      await rt.addEventListener(event) { _, _, data in
         guard let data else { return }
         let dict = Utils.stringToDictionary(text: data)
         completion(dict)
-      })
+      }
     }
   }
   
@@ -255,7 +252,6 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
                 : recordId == "*"
                   ? self.collection
                   : self.collection + "/" + recordId
-    
     Task {
       let dict = await rt.unsubscribe(event)
       let err = try? ErrorResponse(dictionary: dict ?? [:])
@@ -264,11 +260,9 @@ public class Collection<UserModel: AuthModel>: CollectionMethod {
       }
       
       if event == "" {
-        for subscriptions in rt.subscriptions {
-          rt.eventSource?.removeEventListener(subscriptions)
-        }
+        await rt.removeAllEventListeners()
       } else {
-        rt.eventSource?.removeEventListener(event)
+        await rt.removeEventListener(event)
       }
     }
   }
