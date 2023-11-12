@@ -31,6 +31,7 @@ public struct OAuth2Requset: Codable {
 }
 
 public enum OAuthProvider: String, Codable {
+  case apple
   case google
   case facebook
   case twitter
